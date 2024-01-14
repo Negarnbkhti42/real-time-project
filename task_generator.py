@@ -4,9 +4,10 @@ import numpy as np
 from models import task as t
 
 
-def generate_uunifastdiscard(nsets: int, u: float, n: int, filename: str):
-    sets = []
-    while len(sets) < nsets:
+def generate_uunifastdiscard(u: float, n: int, filename: str):
+    print(f"Generating {n} tasks with utilization {u}...")
+    retries = 0
+    while retries < 1000:
         utilizations = []
         sumU = u
         for i in range(1, n):
@@ -16,15 +17,16 @@ def generate_uunifastdiscard(nsets: int, u: float, n: int, filename: str):
         utilizations.append(sumU)
 
         if all(ut <= 1 for ut in utilizations):
-            sets.append(utilizations)
+            with open(filename, 'w', newline='', encoding='UTF-8') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(['Task ' + str(i) for i in range(1, n+1)])
+                writer.writerow(utilizations)
 
-    with open(filename, 'w', newline='', encoding='UTF-8') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(['Task ' + str(i) for i in range(1, n+1)])
-        for utilizations in sets:
-            writer.writerow(utilizations)
+            return utilizations
 
-    return sets
+        retries += 1
+
+    raise Exception("Could not generate utilization set")
 
 
 def generate_tasksets(utilizations, periods):
@@ -68,10 +70,9 @@ def generate_tasks(utilization: float, n: int, available_periods: list):
     task_set = []
     utilizations = []
     utilizations = generate_uunifastdiscard(
-        nsets=1, u=utilization, n=n, filename='task_utilizations.csv')
+        u=utilization, n=n, filename='task_utilizations.csv')
 
-    random.shuffle(utilizations[0])
     task_set = generate_tasksets(
-        utilizations[0], available_periods)
+        utilizations, available_periods)
 
     return task_set
