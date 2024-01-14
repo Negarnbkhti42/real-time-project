@@ -3,15 +3,13 @@ from models import processor as p
 from models import task as t
 import task_generator as tg
 
-AVAILABLE_PERIODS = [10, 20, 25, 50]
+AVAILABLE_PERIODS = [10, 20, 25, 50, 100, 200, 400, 500, 1000]
 
 core_utilization = float(input("Enter utilization of each core: "))
 num_of_cores = int(input("Enter number of cores: "))
 num_of_tasks = int(input("Enter number of tasks: "))
 assignment_method = input("Enter assignment method (wfd or ffd): ")
 
-print(
-    f"Generating {num_of_tasks} tasks with utilization {core_utilization}...")
 
 task_set = tg.generate_tasks(
     num_of_cores * core_utilization, num_of_tasks, AVAILABLE_PERIODS)

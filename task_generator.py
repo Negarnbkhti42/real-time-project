@@ -5,7 +5,6 @@ from models import task as t
 
 
 def generate_uunifastdiscard(u: float, n: int, filename: str):
-    print(f"Generating {n} tasks with utilization {u}...")
     retries = 0
     while retries < 1000:
         utilizations = []
@@ -61,7 +60,7 @@ def generate_tasksets(utilizations, periods):
         for i, task in enumerate(task_set):
             if not isinstance(task, t.TaskCopy):
                 writer.writerow([task.name, task.utilization, task.period, task.relative_deadline,
-                                f"{{{task.low_wcet}, {task.high_wcet}}}", "high" if task.criticality == t.TASK_PRIORITIES["high"] else "low"])
+                                f'{{{task.low_wcet}, {task.high_wcet}}}', "high" if task.criticality == t.TASK_PRIORITIES["high"] else "low"])
 
     return task_set
 
