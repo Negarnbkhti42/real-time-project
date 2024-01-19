@@ -21,20 +21,24 @@ class Processor:
 
             if method == 'wfd':
                 sorted_cores.sort(
-                    key=lambda core: core.utilization, reverse=True)
+                    key=lambda core: core.utilization)
+                # print([(core.number, core.utilization)
+                #       for core in sorted_cores])
 
             selected_core = None
 
             for core in sorted_cores:
                 if core.utilization + task.utilization <= core.max_utilization:
                     selected_core = core
+                    break
 
             if selected_core is None:
                 for core in sorted_cores:
                     if core.utilization + task.utilization <= 1:
                         selected_core = core
+                        break
 
-            if selected_core != None:
+            if selected_core is not None:
                 selected_core.utilization += task.utilization
                 task.assigned_core = selected_core
             else:
