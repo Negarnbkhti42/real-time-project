@@ -33,11 +33,10 @@ class TaskCopy(Task):
 
 
 class Job:
-    def __init__(self, task, copy_number=0):
+    def __init__(self, task):
         self.task = task
         self.number = task.executed_jobs
         self.deadline = (task.period * self.number) + task.relative_deadline
-        self.copy_number = copy_number
         self.remaining_exec_time = task.low_wcet
 
     def __lt__(self, other):
@@ -46,7 +45,5 @@ class Job:
         return self.deadline < other.deadline
 
     def __str__(self):
-        job_string = f"{self.task.number}, {self.number}"
-        if self.copy_number > 0:
-            job_string += f"(copy{self.copy_number})"
+        job_string = f"{self.task.name}, Job_{self.number}"
         return job_string
