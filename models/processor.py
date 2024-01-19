@@ -12,7 +12,7 @@ class Processor:
         for i in range(num_of_cores):
             self.cores.append(Core(i + 1, core_utilization))
 
-    def assign_tasks(self, task_set, method):
+    def map_tasks(self, task_set, method):
         tasks = task_set.copy()
         tasks.sort(key=lambda task: task.utilization, reverse=True)
         assigned_tasks = []

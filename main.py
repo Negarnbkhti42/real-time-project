@@ -15,12 +15,12 @@ task_set = tg.generate_tasks(
     num_of_cores * core_utilization, num_of_tasks, AVAILABLE_PERIODS)
 
 processor = p.Processor(num_of_cores, core_utilization)
-assigned_tasks = processor.assign_tasks(task_set, assignment_method)
+assigned_tasks = processor.map_tasks(task_set, assignment_method)
 
 
 mock_cores = [0 for _ in range(num_of_cores)]
 
-with open(f'{num_of_cores}_cores_{core_utilization}_utilization_{assignment_method}_assign.csv', 'w', newline='', encoding="UTF-8") as file:
+with open(f'{num_of_cores}_cores_{core_utilization}_utilization_{assignment_method}_mapping.csv', 'w', newline='', encoding="UTF-8") as file:
     writer = csv.writer(file)
     writer.writerow(["task", "utilization", "period",
                     "criticality", "assigned core", "core utilization"])
