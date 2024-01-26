@@ -25,8 +25,6 @@ class Processor:
             if method == 'wfd':
                 sorted_cores.sort(
                     key=lambda core: core.utilization)
-                # print([(core.number, core.utilization)
-                #       for core in sorted_cores])
 
             selected_core = None
 
@@ -45,10 +43,8 @@ class Processor:
                 selected_core.utilization += task.utilization
                 task.assigned_core = selected_core
             else:
-                print("not schedulable")
-                return assigned_tasks
-                # raise Exception(
-                #     "task is set is not schedulable with worst fit assignment")
+                raise Exception(
+                    "task is set is not schedulable with worst fit assignment")
 
             assigned_tasks.append(task)
 
@@ -72,10 +68,10 @@ class Processor:
                 selected_job = active_jobs[0]
                 selected_job.remaining_exec_time -= 1
                 selected_task = selected_job.task
-                if schedule_timeline[-1]["task"] == selected_task:
+                if len(schedule_timeline) > 0 and schedule_timeline[-1]["task"] == selected_task:
                     schedule_timeline[-1]["duration"][1] += 1
                 else:
-                    schedule_timeline.append({"task": selected_task, "duration": [
+                    schedule_timeline.append({"task": selected_task, "job": selected_job, "duration": [
                                              current_time, current_time + 1]})
 
                 if selected_job.remaining_exec_time == 0:
@@ -91,4 +87,10 @@ class Processor:
         return schedule_timeline
 
     def schedule_tasks(self, task_set, duration):
-        pass
+        core_schedules = []
+        for core in self.cores:
+            core_tasks = [
+                task for task in task_set if task.assigned_core == core]
+            core_schedules.append(self.schedule_core(core_tasks, duration))
+
+        return core_schedules

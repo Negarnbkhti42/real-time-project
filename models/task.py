@@ -16,10 +16,7 @@ class Task:
         self.executed_jobs = 0
 
     def __str__(self):
-        return f"Task(name={self.name}, relative deadline={self.relative_deadline}," \
-               f"utilization={self.utilization}, period={self.period}, criticality={self.criticality}, " \
-               f"execution time={{{self.low_wcet}, {self.high_wcet}}}, " \
-
+        return self.name
 
     def __lt__(self, other):
         return self.criticality < other.criticality

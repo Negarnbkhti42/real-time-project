@@ -3,7 +3,7 @@ from models import processor as p
 from models import task as t
 import task_generator as tg
 
-AVAILABLE_PERIODS = [10, 20, 25, 50, 100, 200, 400, 500, 1000]
+AVAILABLE_PERIODS = [100, 200, 400, 500, 1000]
 
 core_utilization = float(input("Enter utilization of each core: "))
 num_of_cores = int(input("Enter number of cores: "))
@@ -29,3 +29,14 @@ with open(f'{num_of_cores}_cores_{core_utilization}_utilization_{assignment_meth
         mock_cores[assigned_core_number - 1] += task.utilization
         writer.writerow([task.name, task.utilization, task.period, "high" if task.criticality ==
                         t.TASK_PRIORITIES["high"] else "low", task.assigned_core.number, mock_cores[assigned_core_number - 1]])
+
+schedules = processor.schedule_tasks(assigned_tasks, 2000)
+
+with open(f'{num_of_cores}_cores_{core_utilization}_utilization_{assignment_method}_scheduling.csv', 'w', newline='', encoding="UTF-8") as file:
+    writer = csv.writer(file)
+    writer.writerow(["core", "task", "job", "duration"])
+    for i, core in enumerate(schedules):
+        for timestamp in core:
+            if timestamp["task"] is not None:
+                writer.writerow(
+                    [i + 1, timestamp["task"], timestamp["job"], f'{{{timestamp["duration"][0]}, {timestamp["duration"][1]}}}'])

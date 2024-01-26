@@ -1,5 +1,6 @@
 import csv
 import random
+import math
 import numpy as np
 from models import task as t
 
@@ -8,7 +9,7 @@ def generate_uunifastdiscard(u: float, n: int, filename: str):
     retries = 0
     while retries < 1000:
         utilizations = []
-        sumU = u
+        sumU = u * 0.5
         for i in range(1, n):
             nextSumU = sumU * random.random() ** (1.0 / (n - i))
             utilizations.append(sumU - nextSumU)
@@ -37,9 +38,10 @@ def generate_tasksets(utilizations, periods):
     for indx, u in enumerate(utilizations[:break_point]):
         task_period = random.choice(periods)
         wcet_multiplier = random.uniform(0.3, 0.5)
+        wcet = math.floor(u * task_period)
 
-        new_task = t.Task(f"Task-{indx}", u / 3, task_period, t.TASK_PRIORITIES["high"], max(
-            1, int(wcet_multiplier * task_period)), task_period)
+        new_task = t.Task(f"Task-{indx}", u, task_period, t.TASK_PRIORITIES["high"], max(
+            1, math.floor(wcet_multiplier * wcet)), wcet)
 
         task_set.append(new_task)
 
@@ -49,9 +51,10 @@ def generate_tasksets(utilizations, periods):
     for indx, u in enumerate(utilizations[break_point:]):
         real_indx = indx + break_point
         task_period = random.choice(periods)
+        wcet = math.floor(u * task_period)
 
         task_set.append(t.Task(
-            f"Task-{real_indx}", u, task_period, t.TASK_PRIORITIES["low"], task_period, task_period))
+            f"Task-{real_indx}", u, task_period, t.TASK_PRIORITIES["low"], wcet, wcet))
 
     with open('task_set.csv', 'w', newline='', encoding='UTF-8') as file:
         writer = csv.writer(file)
