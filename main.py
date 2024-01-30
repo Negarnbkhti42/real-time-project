@@ -9,8 +9,9 @@ core_utilization = float(input("Enter utilization of each core: "))
 num_of_cores = int(input("Enter number of cores: "))
 num_of_tasks = int(input("Enter number of tasks: "))
 assignment_method = input("Enter assignment method (wfd or ffd): ")
-scheduling_method = input("Should edf-vd be used?(y/n)")
+scheduling_method = input("Should edf-vd be used?(y/n) ")
 scheduling_method = "edf-vd" if scheduling_method == "y" else "edf"
+overrun_rate = float(input("Enter overrun rate: "))
 
 task_set = tg.generate_tasks(
     num_of_cores * core_utilization, num_of_tasks, AVAILABLE_PERIODS
@@ -53,7 +54,7 @@ with open(
             ]
         )
 
-schedules = processor.schedule_tasks(assigned_tasks, 1000, scheduling_method)
+schedules = processor.schedule_tasks(assigned_tasks, 1000, overrun_rate, scheduling_method)
 
 with open(
     f"{num_of_cores}_cores_{core_utilization}_utilization_{assignment_method}_{scheduling_method}_scheduling.csv",
@@ -73,6 +74,6 @@ with open(
         timeslot.sort(key=lambda x: x["core"])
 
         for core in timeslot:
-            row.append(core["job"])
+            row.append(f'{core["job"]}{'(overrun)' if core["overrun"] else ''}')
 
         writer.writerow(row)

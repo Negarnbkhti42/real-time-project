@@ -1,3 +1,5 @@
+import random
+import math
 from models import task as t
 
 
@@ -8,6 +10,7 @@ class Core:
         self.utilization = 0
         self.assigned_tasks = []
         self.is_in_overrun = False
+        self.is_susceptible_to_overrun = False
 
 
 class Processor:
@@ -62,7 +65,7 @@ class Processor:
                 job.remaining_exec_time = (
                     task.high_wcet - task.low_wcet + job.remaining_exec_time
                 )
-                job.deadline = (task.period * self.number) + task.relative_deadline
+                job.deadline = (task.period * job.number) + task.relative_deadline
             else:
                 job.task.assigned_core = None
 
@@ -74,10 +77,14 @@ class Processor:
             # find active_jobs
             for task in task_set:
                 if current_time % task.period == 0:
+                    is_core_in_overrun = False
+                    if task.assigned_core is not None:
+                        is_core_in_overrun = task.assigned_core.is_in_overrun
+
                     new_job = t.Job(
                         task,
-                        task.assigned_core.is_in_overrun,
-                        use_vd and task.assigned_core.is_in_overrun,
+                        is_core_in_overrun,
+                        use_vd and is_core_in_overrun,
                     )
                     active_jobs.append(new_job)
                     task.executed_jobs += 1
@@ -115,12 +122,13 @@ class Processor:
                         active_jobs.remove(selected_job)
                         if (
                             overrun_time is not None
+                            and core.is_susceptible_to_overrun
                             and not core.is_in_overrun
                             and current_time >= overrun_time
                             and selected_task.criticality == t.TASK_PRIORITIES["high"]
                         ):
                             core.is_in_overrun = True
-                            handle_overrun(active_jobs)
+                            self.handle_overrun(active_jobs)
 
                     if (
                         selected_job.remaining_exec_time > 0
@@ -136,10 +144,18 @@ class Processor:
                             "task": selected_task,
                             "job": selected_job,
                             "core": core.number,
+                            "overrun": core.is_in_overrun,
                         }
                     )
                 else:
-                    timestamp.append({"task": None, "job": None, "core": core.number})
+                    timestamp.append(
+                        {
+                            "task": None,
+                            "job": None,
+                            "core": core.number,
+                            "overrun": core.is_in_overrun,
+                        }
+                    )
 
             schedule_timeline.append(timestamp)
 
@@ -147,7 +163,7 @@ class Processor:
 
         return schedule_timeline
 
-    def schedule_tasks(self, task_set, duration, scheduling_method):
+    def schedule_tasks(self, task_set, duration, overrun_rate, scheduling_method):
         for core in self.cores:
             # get tasks assigned to this core
             core_tasks = [task for task in task_set if task.assigned_core == core]
@@ -190,6 +206,15 @@ class Processor:
                 if task.criticality == t.TASK_PRIORITIES["high"]:
                     task.virtual_deadline = task.period * virtual_deadline_multiplier
 
-            return self.schedule_edf(
-                task_set, duration, None, scheduling_method == "edf-vd"
-            )
+        n = math.floor(overrun_rate * len(self.cores))
+        print(n)
+        susceptible_cores = random.sample(self.cores, n)
+        for core in susceptible_cores:
+            core.is_susceptible_to_overrun = True
+
+        return self.schedule_edf(
+            task_set,
+            duration,
+            None if overrun_rate == 0 else duration / 2,
+            scheduling_method == "edf-vd",
+        )
