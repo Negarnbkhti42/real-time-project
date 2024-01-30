@@ -60,15 +60,14 @@ with open(
     encoding="UTF-8",
 ) as file:
     writer = csv.writer(file)
-    writer.writerow(["core", "task", "job", "duration"])
-    for i, core in enumerate(schedules):
-        for timestamp in core:
-            if timestamp["task"] is not None:
-                writer.writerow(
-                    [
-                        i + 1,
-                        timestamp["task"],
-                        timestamp["job"],
-                        f'{{{timestamp["duration"][0]}, {timestamp["duration"][1]}}}',
-                    ]
-                )
+    writer.writerow(["time", "core", "task", "job"])
+    for time, timeslot in enumerate(schedules):
+        for core in timeslot:
+            writer.writerow(
+                [
+                    time / 1000,
+                    core["core"],
+                    core["task"],
+                    core["job"],
+                ]
+            )

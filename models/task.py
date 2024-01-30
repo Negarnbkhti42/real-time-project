@@ -45,6 +45,8 @@ class Job:
             task.relative_deadline if is_in_overrun else task.virtual_deadline
         )
         self.remaining_exec_time = task.high_wcet if is_in_overrun else task.low_wcet
+        if is_in_overrun:
+            self.task.assigned_core = None
 
     def __lt__(self, other):
         if self.deadline == other.deadline:
