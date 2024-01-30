@@ -70,7 +70,9 @@ class Processor:
         current_time = 0
         schedule_timeline = []
         active_jobs = []
-        while duration > current_time:
+        print(duration)
+        while duration >= current_time:
+            print(current_time)
             # find active_jobs
             for task in task_set:
                 if current_time % task.period == 0:
@@ -104,9 +106,7 @@ class Processor:
                 if selected_job is not None:
                     selected_task = selected_job.task
 
-                    selected_job.remaining_exec_time = round(
-                        selected_job.remaining_exec_time - 0.001, 3
-                    )
+                    selected_job.remaining_exec_time -= 1
                     if selected_job.remaining_exec_time == 0:
                         active_jobs.remove(selected_job)
                         if (
@@ -139,8 +139,7 @@ class Processor:
 
                 schedule_timeline.append(timestamp)
 
-            current_time += 0.001
-            current_time = round(current_time, 3)
+            current_time += 1
 
         return schedule_timeline
 
