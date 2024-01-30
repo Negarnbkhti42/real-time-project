@@ -54,28 +54,25 @@ class Processor:
 
         return assigned_tasks
 
-    def schedule_core(self, task_set, duration, migrated_jobs, overrun_time):
+    def handle_overrun(self, task_set, migrated_jobs, migrated_tasks):
+        for indx, task in enumerate(task_set):
+            if task.criticality == t.TASK_PRORITIES["low"]:
+                task_set.pop(indx)
+                migrated_tasks.append(task)
+
+        for job in active_jobs:
+            if job.task.criticality == t.TASK_PRORITIES["low"]:
+                migrated_job.append(t.MigratedJob(job, current_time))
+
+    def schedule_core(
+        self, task_set, duration, migrated_jobs, migrated_tasks, overrun_time
+    ):
         current_time = 0
         schedule_timeline = []
         active_jobs = []
         is_in_overrun = False
 
         while current_time < duration:
-            # remove low critical tasks if overrun
-            if (
-                (not is_in_overrun)
-                and (overrun_time > 0)
-                and (current_time == overrun_time)
-            ):
-                is_in_overrun = True
-                for indx, task in enumerate(task_set):
-                    if task.criticality == t.TASK_PRORITIES["low"]:
-                        task_set.pop(indx)
-
-                for job in active_jobs:
-                    if job.task.criticality == t.TASK_PRORITIES["low"]:
-                        migrated_job.append(t.MigratedJob(job, current_time))
-
             for task in task_set:
                 # find active jobs
                 if current_time % task.period == 0:
@@ -93,8 +90,17 @@ class Processor:
             if len(active_jobs) > 0:
                 active_jobs.sort()
                 selected_job = active_jobs[0]
-                selected_job.remaining_exec_time -= 1
                 selected_task = selected_job.task
+                selected_job.remaining_exec_time -= 1
+
+                task_will_overrun = False
+                if (
+                    (not is_in_overrun)
+                    and current_time >= overrun_time
+                    and selected_task.criticality == t.TASK_PRIORITIES["high"]
+                ):
+                    task_will_overrun = True
+
                 if (
                     len(schedule_timeline) > 0
                     and schedule_timeline[-1]["task"] == selected_task
@@ -110,8 +116,15 @@ class Processor:
                     )
 
                 if selected_job.remaining_exec_time == 0:
-                    active_jobs.pop(0)
-                elif current_time == selected_job.deadline:
+                    if task_will_overrun:
+                        is_in_overrun = True
+                        self.handle_overrun(task_set, migrated_jobs, migrated_tasks)
+                        selected_job.remaining_exec_time = (
+                            selected_task.high_wcet - selected_task.low_wcet
+                        )
+                    else:
+                        active_jobs.pop(0)
+                elif current_time >= selected_job.deadline:
                     raise Exception(
                         f"deadline for job {selected_job.number} of {selected_job.task.name} missed!"
                     )
@@ -126,6 +139,7 @@ class Processor:
         tasks_separated_by_core = []
         core_schedules = []
         migrated_jobs = []
+        migrated_tasks = []
         for core in self.cores:
             # get tasks assigned to this core
             core_tasks = [task for task in task_set if task.assigned_core == core]
@@ -170,7 +184,9 @@ class Processor:
                     task.virtual_deadline = task.period * virtual_deadline_multiplier
 
             core_schedules.append(
-                self.schedule_core(core_tasks, duration, migrated_job, duration / 2)
+                self.schedule_core(
+                    core_tasks, duration, migrated_jobs, migrated_tasks, duration / 2
+                )
             )
 
         return core_schedules
