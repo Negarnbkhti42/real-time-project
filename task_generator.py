@@ -1,4 +1,5 @@
 import csv
+import math
 import random
 import numpy as np
 from models import task as t
@@ -110,3 +111,18 @@ def generate_tasks(utilization: float, n: int, available_periods: list):
     task_set = generate_tasksets(utilizations, available_periods)
 
     return task_set
+
+
+# todo: this needs the numbers to be integer.
+def demand_bound_function_tester(task_set: list[t.Task], hyper_period):
+    for i in range (0, hyper_period):
+        demand = 0
+        for task in task_set:
+            demand += demand_bound_function(task, i)
+        if demand > i:
+            raise Exception("DBF failed")
+
+def demand_bound_function(task: t.Task, x):
+    maximal_jobs = max(0, 1 + math.ceil((x - task.relative_deadline)/task.period))
+    dbf = maximal_jobs * task.high_wcet
+    return dbf
