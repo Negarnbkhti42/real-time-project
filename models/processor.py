@@ -21,10 +21,8 @@ class Processor:
         assigned_tasks = []
         sorted_cores = self.cores.copy()
         for task in tasks:
-
-            if method == 'wfd':
-                sorted_cores.sort(
-                    key=lambda core: core.utilization)
+            if method == "wfd":
+                sorted_cores.sort(key=lambda core: core.utilization)
 
             selected_core = None
 
@@ -44,7 +42,8 @@ class Processor:
                 task.assigned_core = selected_core
             else:
                 raise Exception(
-                    "task is set is not schedulable with worst fit assignment")
+                    "task is set is not schedulable with worst fit assignment"
+                )
 
             assigned_tasks.append(task)
 
@@ -56,7 +55,6 @@ class Processor:
         active_jobs = []
 
         while current_time < duration:
-
             for task in task_set:
                 if current_time % task.period == 0:
                     new_job = t.Job(task)
@@ -68,17 +66,26 @@ class Processor:
                 selected_job = active_jobs[0]
                 selected_job.remaining_exec_time -= 1
                 selected_task = selected_job.task
-                if len(schedule_timeline) > 0 and schedule_timeline[-1]["task"] == selected_task:
+                if (
+                    len(schedule_timeline) > 0
+                    and schedule_timeline[-1]["task"] == selected_task
+                ):
                     schedule_timeline[-1]["duration"][1] += 1
                 else:
-                    schedule_timeline.append({"task": selected_task, "job": selected_job, "duration": [
-                                             current_time, current_time + 1]})
+                    schedule_timeline.append(
+                        {
+                            "task": selected_task,
+                            "job": selected_job,
+                            "duration": [current_time, current_time + 1],
+                        }
+                    )
 
                 if selected_job.remaining_exec_time == 0:
                     active_jobs.pop(0)
                 elif current_time == selected_job.deadline:
                     raise Exception(
-                        f'deadline for job {selected_job.number} of {selected_job.task.name} missed!')
+                        f"deadline for job {selected_job.number} of {selected_job.task.name} missed!"
+                    )
             else:
                 schedule_timeline.append({"task": None})
 
@@ -89,8 +96,7 @@ class Processor:
     def schedule_tasks(self, task_set, duration):
         core_schedules = []
         for core in self.cores:
-            core_tasks = [
-                task for task in task_set if task.assigned_core == core]
+            core_tasks = [task for task in task_set if task.assigned_core == core]
             core_schedules.append(self.schedule_core(core_tasks, duration))
 
         return core_schedules
