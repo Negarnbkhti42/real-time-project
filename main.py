@@ -56,7 +56,7 @@ with open(
 schedules = processor.schedule_tasks(assigned_tasks, 1000, scheduling_method)
 
 with open(
-    f"{num_of_cores}_cores_{core_utilization}_utilization_{scheduling_method}_scheduling.csv",
+    f"{num_of_cores}_cores_{core_utilization}_utilization_{assignment_method}_{scheduling_method}_scheduling.csv",
     "w",
     newline="",
     encoding="UTF-8",
