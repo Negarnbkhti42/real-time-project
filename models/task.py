@@ -2,9 +2,12 @@ TASK_PRIORITIES = {"high": 1, "low": 2}
 
 
 class Task:
-    def __init__(self, name, utilization, period, criticality, low_wcet, high_wcet):
+    def __init__(
+        self, number, name, utilization, period, criticality, low_wcet, high_wcet
+    ):
         self.utilization = utilization
         self.period = period
+        self.number = number
         self.name = name
         self.criticality = criticality
         self.high_wcet = high_wcet
@@ -22,6 +25,7 @@ class Task:
 class TaskCopy(Task):
     def __init__(self, task, copy_number):
         super().__init__(
+            task.number,
             task.name,
             task.utilization,
             task.period,

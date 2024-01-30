@@ -27,17 +27,22 @@ class Processor:
             selected_core = None
 
             for core in sorted_cores:
-                if core.utilization + task.utilization <= core.max_utilization:
+                if (task.number not in core.assigned_tasks) and (
+                    core.utilization + task.utilization <= core.max_utilization
+                ):
                     selected_core = core
                     break
 
             if selected_core is None:
                 for core in sorted_cores:
-                    if core.utilization + task.utilization <= 1:
+                    if (task.number not in core.assigned_tasks) and (
+                        core.utilization + task.utilization <= 1
+                    ):
                         selected_core = core
                         break
 
             if selected_core is not None:
+                selected_core.assigned_tasks.append(task.number)
                 selected_core.utilization += task.utilization
                 task.assigned_core = selected_core
             else:
@@ -94,9 +99,10 @@ class Processor:
         return schedule_timeline
 
     def schedule_tasks(self, task_set, duration):
-        core_schedules = []
+        tasks_separated_by_core = []
         for core in self.cores:
             core_tasks = [task for task in task_set if task.assigned_core == core]
-            core_schedules.append(self.schedule_core(core_tasks, duration))
 
-        return core_schedules
+            tasks_separated_by_core.append(core_tasks)
+
+        # return core_schedules

@@ -40,11 +40,12 @@ def generate_tasksets(utilizations, periods):
         wcet = math.floor(u * task_period)
 
         new_task = t.Task(
+            indx,
             f"Task-{indx}",
             u,
             task_period,
             t.TASK_PRIORITIES["high"],
-            max(1, math.floor(wcet_multiplier * wcet)),
+            math.floor(wcet_multiplier * wcet),
             wcet,
         )
 
@@ -60,6 +61,7 @@ def generate_tasksets(utilizations, periods):
 
         task_set.append(
             t.Task(
+                real_indx,
                 f"Task-{real_indx}",
                 u,
                 task_period,
