@@ -19,6 +19,7 @@ task_set = tg.generate_tasks(
 
 processor = p.Processor(num_of_cores, core_utilization)
 assigned_tasks = processor.map_tasks(task_set, assignment_method)
+tg.dbf_by_core(assigned_tasks, processor, 1000)
 
 
 mock_cores = [0 for _ in range(num_of_cores)]

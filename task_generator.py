@@ -113,7 +113,11 @@ def generate_tasks(utilization: float, n: int, available_periods: list):
     return task_set
 
 
-# todo: this needs the numbers to be integer.
+def dbf_by_core(task_set: list[t.Task], processor, hyper_period):
+    for core in processor.cores:
+        core_tasks = [task for task in task_set if task.assigned_core == core]
+        demand_bound_function_tester(core_tasks, hyper_period)
+
 def demand_bound_function_tester(task_set: list[t.Task], hyper_period):
     for i in range (0, hyper_period):
         demand = 0
@@ -123,6 +127,6 @@ def demand_bound_function_tester(task_set: list[t.Task], hyper_period):
             raise Exception("DBF failed")
 
 def demand_bound_function(task: t.Task, x):
-    maximal_jobs = max(0, 1 + math.ceil((x - task.relative_deadline)/task.period))
+    maximal_jobs = max(0, 1 + math.floor((x - task.relative_deadline)/task.period))
     dbf = maximal_jobs * task.high_wcet
     return dbf
