@@ -104,7 +104,9 @@ class Processor:
                 if selected_job is not None:
                     selected_task = selected_job.task
 
-                    selected_job.remaining_exec_time -= 0.001
+                    selected_job.remaining_exec_time = round(
+                        selected_job.remaining_exec_time - 0.001, 3
+                    )
                     if selected_job.remaining_exec_time == 0:
                         active_jobs.remove(selected_job)
                         if (
@@ -138,6 +140,7 @@ class Processor:
                 schedule_timeline.append(timestamp)
 
             current_time += 0.001
+            current_time = round(current_time, 3)
 
         return schedule_timeline
 
