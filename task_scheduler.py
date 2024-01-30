@@ -4,7 +4,6 @@ from models import task as t
 
 
 def edf_vd_scheduling(tasks, num_cores, utilization, duration):
-
     active_tasks = []
     timeline = []
     time = 0
@@ -50,10 +49,9 @@ def edf_vd_scheduling(tasks, num_cores, utilization, duration):
         # Move to the next time step
         time += 1
 
-    with open(f"schedule_{num_cores}_{utilization}.csv", 'w', newline='') as csvfile:
+    with open(f"schedule_{num_cores}_{utilization}.csv", "w", newline="") as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow([''] + ['Core ' + str(i)
-                        for i in range(1, num_cores + 1)])
+        writer.writerow([""] + ["Core " + str(i) for i in range(1, num_cores + 1)])
         for indx, timestamp in enumerate(timeline):
             writer.writerow([indx] + timestamp)
 

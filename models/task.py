@@ -1,7 +1,4 @@
-TASK_PRIORITIES = {
-    "high": 1,
-    "low": 2
-}
+TASK_PRIORITIES = {"high": 1, "low": 2}
 
 
 class Task:
@@ -24,8 +21,14 @@ class Task:
 
 class TaskCopy(Task):
     def __init__(self, task, copy_number):
-        super().__init__(task.name, task.utilization, task.period,
-                         task.criticality, task.low_wcet, task.high_wcet)
+        super().__init__(
+            task.name,
+            task.utilization,
+            task.period,
+            task.criticality,
+            task.low_wcet,
+            task.high_wcet,
+        )
         self.name = f"{task.name}_copy-{copy_number}"
 
 

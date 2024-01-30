@@ -17,9 +17,9 @@ def generate_uunifastdiscard(u: float, n: int, filename: str):
         utilizations.append(sumU)
 
         if all(ut <= 1 for ut in utilizations):
-            with open(filename, 'w', newline='', encoding='UTF-8') as csvfile:
+            with open(filename, "w", newline="", encoding="UTF-8") as csvfile:
                 writer = csv.writer(csvfile)
-                writer.writerow(['Task ' + str(i) for i in range(1, n+1)])
+                writer.writerow(["Task " + str(i) for i in range(1, n + 1)])
                 writer.writerow(utilizations)
 
             return utilizations
@@ -30,7 +30,6 @@ def generate_uunifastdiscard(u: float, n: int, filename: str):
 
 
 def generate_tasksets(utilizations, periods):
-
     task_set = []
 
     break_point = len(utilizations) // 2
@@ -40,8 +39,14 @@ def generate_tasksets(utilizations, periods):
         wcet_multiplier = random.uniform(0.3, 0.5)
         wcet = math.floor(u * task_period)
 
-        new_task = t.Task(f"Task-{indx}", u, task_period, t.TASK_PRIORITIES["high"], max(
-            1, math.floor(wcet_multiplier * wcet)), wcet)
+        new_task = t.Task(
+            f"Task-{indx}",
+            u,
+            task_period,
+            t.TASK_PRIORITIES["high"],
+            max(1, math.floor(wcet_multiplier * wcet)),
+            wcet,
+        )
 
         task_set.append(new_task)
 
@@ -53,17 +58,43 @@ def generate_tasksets(utilizations, periods):
         task_period = random.choice(periods)
         wcet = math.floor(u * task_period)
 
-        task_set.append(t.Task(
-            f"Task-{real_indx}", u, task_period, t.TASK_PRIORITIES["low"], wcet, wcet))
+        task_set.append(
+            t.Task(
+                f"Task-{real_indx}",
+                u,
+                task_period,
+                t.TASK_PRIORITIES["low"],
+                wcet,
+                wcet,
+            )
+        )
 
-    with open('task_set.csv', 'w', newline='', encoding='UTF-8') as file:
+    with open("task_set.csv", "w", newline="", encoding="UTF-8") as file:
         writer = csv.writer(file)
-        writer.writerow(["task", "utilization", "period",
-                        "relative deadline", "wcet", "criticality"])
+        writer.writerow(
+            [
+                "task",
+                "utilization",
+                "period",
+                "relative deadline",
+                "wcet",
+                "criticality",
+            ]
+        )
         for i, task in enumerate(task_set):
             if not isinstance(task, t.TaskCopy):
-                writer.writerow([task.name, task.utilization, task.period, task.relative_deadline,
-                                f'{{{task.low_wcet}, {task.high_wcet}}}', "high" if task.criticality == t.TASK_PRIORITIES["high"] else "low"])
+                writer.writerow(
+                    [
+                        task.name,
+                        task.utilization,
+                        task.period,
+                        task.relative_deadline,
+                        f"{{{task.low_wcet}, {task.high_wcet}}}",
+                        "high"
+                        if task.criticality == t.TASK_PRIORITIES["high"]
+                        else "low",
+                    ]
+                )
 
     return task_set
 
@@ -72,9 +103,9 @@ def generate_tasks(utilization: float, n: int, available_periods: list):
     task_set = []
     utilizations = []
     utilizations = generate_uunifastdiscard(
-        u=utilization, n=n, filename='task_utilizations.csv')
+        u=utilization, n=n, filename="task_utilizations.csv"
+    )
 
-    task_set = generate_tasksets(
-        utilizations, available_periods)
+    task_set = generate_tasksets(utilizations, available_periods)
 
     return task_set
