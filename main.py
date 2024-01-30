@@ -3,7 +3,7 @@ from models import processor as p
 from models import task as t
 import task_generator as tg
 
-AVAILABLE_PERIODS = [100, 200, 400, 500, 1000]
+AVAILABLE_PERIODS = [10, 20, 40, 50, 100, 200, 400, 500, 1000]
 
 core_utilization = float(input("Enter utilization of each core: "))
 num_of_cores = int(input("Enter number of cores: "))
@@ -51,7 +51,7 @@ with open(
             ]
         )
 
-schedules = processor.schedule_tasks(assigned_tasks, 2000)
+schedules = processor.schedule_tasks(assigned_tasks, 4000)
 
 with open(
     f"{num_of_cores}_cores_{core_utilization}_utilization_{assignment_method}_scheduling.csv",

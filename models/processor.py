@@ -54,18 +54,42 @@ class Processor:
 
         return assigned_tasks
 
-    def schedule_core(self, task_set, duration):
+    def schedule_core(self, task_set, duration, migrated_jobs, overrun_time):
         current_time = 0
         schedule_timeline = []
         active_jobs = []
+        is_in_overrun = False
 
         while current_time < duration:
+            # remove low critical tasks if overrun
+            if (
+                (not is_in_overrun)
+                and (overrun_time > 0)
+                and (current_time == overrun_time)
+            ):
+                is_in_overrun = True
+                for indx, task in enumerate(task_set):
+                    if task.criticality == t.TASK_PRORITIES["low"]:
+                        task_set.pop(indx)
+
+                for job in active_jobs:
+                    if job.task.criticality == t.TASK_PRORITIES["low"]:
+                        migrated_job.append(t.MigratedJob(job, current_time))
+
             for task in task_set:
+                # find active jobs
                 if current_time % task.period == 0:
-                    new_job = t.Job(task)
+                    new_job = t.Job(task, is_in_overrun)
                     active_jobs.append(new_job)
                     task.executed_jobs += 1
 
+                # migrate jobs at correct time
+                for migrated_job in migrated_jobs:
+                    if migrated_job.migration_time == current_time:
+                        active_job.append(migrated_job)
+                        task_set.append(migrated_job.task)
+
+            # schedule task with highest priority on core
             if len(active_jobs) > 0:
                 active_jobs.sort()
                 selected_job = active_jobs[0]
@@ -100,9 +124,53 @@ class Processor:
 
     def schedule_tasks(self, task_set, duration):
         tasks_separated_by_core = []
+        core_schedules = []
+        migrated_jobs = []
         for core in self.cores:
+            # get tasks assigned to this core
             core_tasks = [task for task in task_set if task.assigned_core == core]
-
             tasks_separated_by_core.append(core_tasks)
 
-        # return core_schedules
+            # calculate virtual deadline for tasks in this core
+            sum_of_high_crit_util = sum(
+                [
+                    task.low_wcet
+                    for task in core_tasks
+                    if task.criticality == t.TASK_PRIORITIES["high"]
+                ]
+            )
+            sum_of_high_crit_high_wcet_util = sum(
+                [
+                    task.high_wcet
+                    for task in core_tasks
+                    if task.criticality == t.TASK_PRIORITIES["high"]
+                ]
+            )
+            sum_of_low_crit_util = sum(
+                [
+                    task.low_wcet
+                    for task in core_tasks
+                    if task.criticality == t.TASK_PRIORITIES["low"]
+                ]
+            )
+            virtual_deadline_multiplier = sum_of_high_crit_util / (
+                1 - sum_of_low_crit_util
+            )
+
+            # test schedulability using gained x
+            if (
+                (virtual_deadline_multiplier * sum_of_low_crit_util)
+                + sum_of_high_crit_high_wcet_util
+            ) > 1:
+                raise Exception("not schedulable")
+
+            # apply virtual deadline
+            for task in core_tasks:
+                if task.criticality == t.TASK_PRIORITIES["high"]:
+                    task.virtual_deadline = task.period * virtual_deadline_multiplier
+
+            core_schedules.append(
+                self.schedule_core(core_tasks, duration, migrated_job, duration / 2)
+            )
+
+        return core_schedules

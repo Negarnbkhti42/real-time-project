@@ -13,6 +13,7 @@ class Task:
         self.high_wcet = high_wcet
         self.low_wcet = low_wcet if criticality == 1 else high_wcet
         self.relative_deadline = period
+        self.virtual_deadline = period
         self.executed_jobs = 0
 
     def __str__(self):
@@ -37,10 +38,12 @@ class TaskCopy(Task):
 
 
 class Job:
-    def __init__(self, task):
+    def __init__(self, task, is_in_overrun):
         self.task = task
         self.number = task.executed_jobs
-        self.deadline = (task.period * self.number) + task.relative_deadline
+        self.deadline = (task.period * self.number) + (
+            task.relative_deadline if is_in_overrun else task.virtual_deadline
+        )
         self.remaining_exec_time = task.low_wcet
 
     def __lt__(self, other):
@@ -51,3 +54,12 @@ class Job:
     def __str__(self):
         job_string = f"{self.task.name}, Job_{self.number}"
         return job_string
+
+
+class MigratedJob(Job):
+    def __init__(self, job, migration_time):
+        super().__init__(job.task)
+        self.number = job.number
+        self.deadline = job.deadline
+        self.remaining_exec_time = job.remaining_exec_time
+        self.migration_time = migration_time
