@@ -70,9 +70,7 @@ class Processor:
         current_time = 0
         schedule_timeline = []
         active_jobs = []
-        print(duration)
         while duration >= current_time:
-            print(current_time)
             # find active_jobs
             for task in task_set:
                 if current_time % task.period == 0:
