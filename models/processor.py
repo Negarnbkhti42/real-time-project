@@ -131,7 +131,7 @@ class Processor:
             else:
                 schedule_timeline.append({"task": None})
 
-            current_time += 1
+            current_time += 0.001
 
         return schedule_timeline
 

@@ -1,6 +1,5 @@
 import csv
 import random
-import math
 import numpy as np
 from models import task as t
 
@@ -37,7 +36,7 @@ def generate_tasksets(utilizations, periods):
     for indx, u in enumerate(utilizations[:break_point]):
         task_period = random.choice(periods)
         wcet_multiplier = random.uniform(0.3, 0.5)
-        wcet = math.floor(u * task_period)
+        wcet = round(u * task_period, 3)
 
         new_task = t.Task(
             indx,
@@ -45,7 +44,7 @@ def generate_tasksets(utilizations, periods):
             u,
             task_period,
             t.TASK_PRIORITIES["high"],
-            math.floor(wcet_multiplier * wcet),
+            round(wcet_multiplier * wcet, 3),
             wcet,
         )
 
@@ -57,7 +56,7 @@ def generate_tasksets(utilizations, periods):
     for indx, u in enumerate(utilizations[break_point:]):
         real_indx = indx + break_point
         task_period = random.choice(periods)
-        wcet = math.floor(u * task_period)
+        wcet = round(u * task_period, 3)
 
         task_set.append(
             t.Task(
