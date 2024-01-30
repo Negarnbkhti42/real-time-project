@@ -66,7 +66,7 @@ class Processor:
             else:
                 job.task.assigned_core = None
 
-    def schedule_edf_vd(self, task_set, duration, overrun_time):
+    def schedule_edf(self, task_set, duration, overrun_time, use_vd):
         current_time = 0
         schedule_timeline = []
         active_jobs = []
@@ -74,7 +74,11 @@ class Processor:
             # find active_jobs
             for task in task_set:
                 if current_time % task.period == 0:
-                    new_job = t.Job(task, task.assigned_core.is_in_overrun)
+                    new_job = t.Job(
+                        task,
+                        task.assigned_core.is_in_overrun,
+                        use_vd and task.assigned_core.is_in_overrun,
+                    )
                     active_jobs.append(new_job)
                     task.executed_jobs += 1
 
@@ -143,7 +147,7 @@ class Processor:
 
         return schedule_timeline
 
-    def schedule_tasks(self, task_set, duration):
+    def schedule_tasks(self, task_set, duration, scheduling_method):
         for core in self.cores:
             # get tasks assigned to this core
             core_tasks = [task for task in task_set if task.assigned_core == core]
@@ -186,4 +190,6 @@ class Processor:
                 if task.criticality == t.TASK_PRIORITIES["high"]:
                     task.virtual_deadline = task.period * virtual_deadline_multiplier
 
-        return self.schedule_edf_vd(task_set, duration, None)
+            return self.schedule_edf(
+                task_set, duration, None, scheduling_method == "edf-vd"
+            )

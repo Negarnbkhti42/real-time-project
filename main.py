@@ -9,6 +9,8 @@ core_utilization = float(input("Enter utilization of each core: "))
 num_of_cores = int(input("Enter number of cores: "))
 num_of_tasks = int(input("Enter number of tasks: "))
 assignment_method = input("Enter assignment method (wfd or ffd): ")
+scheduling_method = input("Should edf-vd be used?(y/n)")
+scheduling_method = "edf-vd" if scheduling_method == "y" else "edf"
 
 task_set = tg.generate_tasks(
     num_of_cores * core_utilization, num_of_tasks, AVAILABLE_PERIODS
@@ -51,10 +53,10 @@ with open(
             ]
         )
 
-schedules = processor.schedule_tasks(assigned_tasks, 1000)
+schedules = processor.schedule_tasks(assigned_tasks, 1000, scheduling_method)
 
 with open(
-    f"{num_of_cores}_cores_{core_utilization}_utilization_{assignment_method}_scheduling.csv",
+    f"{num_of_cores}_cores_{core_utilization}_utilization_{scheduling_method}_scheduling.csv",
     "w",
     newline="",
     encoding="UTF-8",

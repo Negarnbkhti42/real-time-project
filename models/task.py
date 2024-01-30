@@ -38,11 +38,11 @@ class TaskCopy(Task):
 
 
 class Job:
-    def __init__(self, task, is_in_overrun):
+    def __init__(self, task, is_in_overrun, use_virtual_deadline=True):
         self.task = task
         self.number = task.executed_jobs
         self.deadline = (task.period * self.number) + (
-            task.relative_deadline if is_in_overrun else task.virtual_deadline
+            task.relative_deadline if use_virtual_deadline else task.virtual_deadline
         )
         self.remaining_exec_time = task.high_wcet if is_in_overrun else task.low_wcet
         if is_in_overrun:
