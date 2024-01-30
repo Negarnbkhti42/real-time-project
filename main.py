@@ -3,7 +3,7 @@ from models import processor as p
 from models import task as t
 import task_generator as tg
 
-AVAILABLE_PERIODS = [200, 250, 500, 1000]
+AVAILABLE_PERIODS = [10, 20, 25, 50, 100, 200, 250, 500, 1000]
 
 core_utilization = float(input("Enter utilization of each core: "))
 num_of_cores = int(input("Enter number of cores: "))
@@ -61,17 +61,16 @@ with open(
 ) as file:
     writer = csv.writer(file)
     header = ["time"]
-    for _ in range(num_of_cores):
-        header += ["core", "task", "job", None]
-    header.pop()
+    for i in range(num_of_cores):
+        header.append(f"core {i + 1}")
 
     writer.writerow(header)
 
     for time, timeslot in enumerate(schedules):
-        row = [time]
+        row = [time / 1000]
+        timeslot.sort(key=lambda x: x["core"])
 
         for core in timeslot:
-            row += [core["core"], core["task"], core["job"], None]
-        row.pop()
+            row.append(core["job"])
 
         writer.writerow(row)
