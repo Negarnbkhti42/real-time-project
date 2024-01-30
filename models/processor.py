@@ -148,21 +148,21 @@ class Processor:
             # calculate virtual deadline for tasks in this core
             sum_of_high_crit_util = sum(
                 [
-                    task.low_wcet
+                    task.low_wcet / task.period
                     for task in core_tasks
                     if task.criticality == t.TASK_PRIORITIES["high"]
                 ]
             )
             sum_of_high_crit_high_wcet_util = sum(
                 [
-                    task.high_wcet
+                    task.utilization
                     for task in core_tasks
                     if task.criticality == t.TASK_PRIORITIES["high"]
                 ]
             )
             sum_of_low_crit_util = sum(
                 [
-                    task.low_wcet
+                    task.utilization
                     for task in core_tasks
                     if task.criticality == t.TASK_PRIORITIES["low"]
                 ]
