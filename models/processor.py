@@ -102,7 +102,7 @@ class Processor:
                             raise Exception("deadline missed. task: {}, time: {}".format(job.task.name, current_time))
                         core_jobs.append(job)
 
-                if len(core_jobs) == 0:
+                if len(core_jobs) == 0 and not core.is_in_overrun:
                     # if core empty, execute a migrated job
                     migrated_jobs = [
                         job for job in active_jobs if job.task.assigned_core == None
