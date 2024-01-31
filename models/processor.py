@@ -85,7 +85,7 @@ class Processor:
                     new_job = t.Job(
                         task,
                         is_core_in_overrun,
-                        use_vd and is_core_in_overrun,
+                        use_vd and not is_core_in_overrun,
                     )
                     active_jobs.append(new_job)
                     task.executed_jobs += 1
@@ -98,6 +98,8 @@ class Processor:
                 # find acive jobs for a core, or migrating jobs
                 for job in active_jobs:
                     if job.task.assigned_core == core:
+                        if job.actual_deadline < current_time and job.task.criticality == t.TASK_PRIORITIES["high"]:
+                            raise Exception("deadline missed. task: {}, time: {}".format(job.task.name, current_time))
                         core_jobs.append(job)
 
                 if len(core_jobs) == 0:
@@ -116,10 +118,13 @@ class Processor:
                 if selected_job is not None:
                     selected_task = selected_job.task
 
-                    selected_job.remaining_exec_time = round(
-                        selected_job.remaining_exec_time - 0.001, 3
-                    )
-                    if selected_job.remaining_exec_time == 0:
+                    selected_job.remaining_exec_time = selected_job.remaining_exec_time - 1
+                    if selected_job.remaining_exec_time <= 0 and selected_job.fault:
+                        print("fault detected at {} for task {}".format(current_time, selected_job.task.name))
+                        selected_job.fault = False
+                        selected_job.remaining_exec_time = selected_job.task.high_wcet
+
+                    if selected_job.remaining_exec_time <= 0:
                         active_jobs.remove(selected_job)
                         if (
                             overrun_time is not None
@@ -141,9 +146,9 @@ class Processor:
                         selected_job.remaining_exec_time > 0
                         and current_time == selected_job.deadline
                     ):
-                        if selected_task.criticality == t.TASK_PRIORITIES["high"]:
-                            return schedule_timeline, sum(QoS) / len(QoS)
-                        else:
+                        # if selected_task.criticality == t.TASK_PRIORITIES["high"]:
+                        #     return schedule_timeline, sum(QoS) / len(QoS) if len(QoS) > 0 else 0
+                        # else:
                             selected_job.quality_of_service = 1 - (
                                 selected_job.remaining_exec_time
                                 / selected_task.low_wcet
@@ -171,9 +176,9 @@ class Processor:
 
             schedule_timeline.append(timestamp)
 
-            current_time = round(current_time + 0.001, 3)
+            current_time += 1
 
-        return schedule_timeline, sum(QoS) / len(QoS)
+        return schedule_timeline, 0 if len(QoS) == 0 else sum(QoS) / len(QoS)
 
     def schedule_tasks(self, task_set, duration, overrun_rate, scheduling_method):
         for core in self.cores:

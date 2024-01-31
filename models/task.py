@@ -1,3 +1,5 @@
+import random
+
 TASK_PRIORITIES = {"high": 1, "low": 2}
 
 
@@ -43,8 +45,10 @@ class Job:
         self.number = task.executed_jobs
         self.quality_of_service = None
         self.deadline = (task.period * self.number) + (
-            task.relative_deadline if use_virtual_deadline else task.virtual_deadline
+            task.virtual_deadline if use_virtual_deadline else task.relative_deadline
         )
+        self.actual_deadline = (task.period * self.number) + task.relative_deadline
+        self.fault = random.Random().random() < 0.3 # todo: change
         self.remaining_exec_time = task.high_wcet if is_in_overrun else task.low_wcet
         if is_in_overrun:
             self.task.assigned_core = None
@@ -64,5 +68,6 @@ class MigratedJob(Job):
         super().__init__(job.task)
         self.number = job.number
         self.deadline = job.deadline
+        self.actual_deadline = job.actual_deadline
         self.remaining_exec_time = job.remaining_exec_time
         self.migration_time = migration_time

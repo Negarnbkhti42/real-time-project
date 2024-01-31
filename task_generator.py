@@ -3,6 +3,7 @@ import math
 import random
 import numpy as np
 from models import task as t
+from config import DEBUG
 
 
 def generate_uunifastdiscard(u: float, n: int, filename: str):
@@ -17,10 +18,11 @@ def generate_uunifastdiscard(u: float, n: int, filename: str):
         utilizations.append(sumU)
 
         if all(ut <= 1 for ut in utilizations):
-            with open(filename, "w", newline="", encoding="UTF-8") as csvfile:
-                writer = csv.writer(csvfile)
-                writer.writerow(["Task " + str(i) for i in range(1, n + 1)])
-                writer.writerow(utilizations)
+            if DEBUG:
+                with open(filename, "w", newline="", encoding="UTF-8") as csvfile:
+                    writer = csv.writer(csvfile)
+                    writer.writerow(["Task " + str(i) for i in range(1, n + 1)])
+                    writer.writerow(utilizations)
 
             return utilizations
 
@@ -71,32 +73,33 @@ def generate_tasksets(utilizations, periods):
             )
         )
 
-    with open("task_set.csv", "w", newline="", encoding="UTF-8") as file:
-        writer = csv.writer(file)
-        writer.writerow(
-            [
-                "task",
-                "utilization",
-                "period",
-                "relative deadline",
-                "wcet",
-                "criticality",
-            ]
-        )
-        for i, task in enumerate(task_set):
-            if not isinstance(task, t.TaskCopy):
-                writer.writerow(
-                    [
-                        task.name,
-                        task.utilization,
-                        task.period,
-                        task.relative_deadline,
-                        f"{{{task.low_wcet}, {task.high_wcet}}}",
-                        "high"
-                        if task.criticality == t.TASK_PRIORITIES["high"]
-                        else "low",
-                    ]
-                )
+    if DEBUG:
+        with open("task_set.csv", "w", newline="", encoding="UTF-8") as file:
+            writer = csv.writer(file)
+            writer.writerow(
+                [
+                    "task",
+                    "utilization",
+                    "period",
+                    "relative deadline",
+                    "wcet",
+                    "criticality",
+                ]
+            )
+            for i, task in enumerate(task_set):
+                if not isinstance(task, t.TaskCopy):
+                    writer.writerow(
+                        [
+                            task.name,
+                            task.utilization,
+                            task.period,
+                            task.relative_deadline,
+                            f"{{{task.low_wcet}, {task.high_wcet}}}",
+                            "high"
+                            if task.criticality == t.TASK_PRIORITIES["high"]
+                            else "low",
+                        ]
+                    )
 
     return task_set
 
