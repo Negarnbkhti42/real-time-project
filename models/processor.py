@@ -73,6 +73,7 @@ class Processor:
         current_time = 0
         schedule_timeline = []
         active_jobs = []
+        QoS = []
         while duration > current_time:
             # find active_jobs
             for task in task_set:
@@ -129,15 +130,26 @@ class Processor:
                         ):
                             core.is_in_overrun = True
                             self.handle_overrun(active_jobs)
+                        if (
+                            selected_task.criticality == t.TASK_PRIORITIES["low"]
+                            and selected_job.quality_of_service is None
+                        ):
+                            selected_job.quality_of_service = 1
+                            QoS.append(selected_job.quality_of_service)
 
                     if (
                         selected_job.remaining_exec_time > 0
                         and current_time == selected_job.deadline
-                        and selected_task.criticality == t.TASK_PRIORITIES["high"]
                     ):
-                        raise Exception(
-                            f"deadline for job {selected_job.number} of {selected_job.task.name} missed!"
-                        )
+                        if selected_task.criticality == t.TASK_PRIORITIES["high"]:
+                            return schedule_timeline, sum(QoS) / len(QoS)
+                        else:
+                            selected_job.quality_of_service = 1 - (
+                                selected_job.remaining_exec_time
+                                / selected_task.low_wcet
+                            )
+
+                            QoS.append(selected_job.quality_of_service)
 
                     timestamp.append(
                         {
@@ -161,7 +173,7 @@ class Processor:
 
             current_time = round(current_time + 0.001, 3)
 
-        return schedule_timeline
+        return schedule_timeline, sum(QoS) / len(QoS)
 
     def schedule_tasks(self, task_set, duration, overrun_rate, scheduling_method):
         for core in self.cores:
@@ -207,7 +219,6 @@ class Processor:
                     task.virtual_deadline = task.period * virtual_deadline_multiplier
 
         n = math.floor(overrun_rate * len(self.cores))
-        print(n)
         susceptible_cores = random.sample(self.cores, n)
         for core in susceptible_cores:
             core.is_susceptible_to_overrun = True
