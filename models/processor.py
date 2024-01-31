@@ -100,7 +100,7 @@ class Processor:
                     if job.task.assigned_core == core:
                         core_jobs.append(job)
 
-                if len(core_jobs) == 0:
+                if len(core_jobs) == 0 and not core.is_in_overrun:
                     # if core empty, execute a migrated job
                     migrated_jobs = [
                         job for job in active_jobs if job.task.assigned_core == None
