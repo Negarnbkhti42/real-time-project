@@ -41,6 +41,7 @@ class Job:
     def __init__(self, task, is_in_overrun, use_virtual_deadline=True):
         self.task = task
         self.number = task.executed_jobs
+        self.quality_of_service = None
         self.deadline = (task.period * self.number) + (
             task.relative_deadline if use_virtual_deadline else task.virtual_deadline
         )
