@@ -82,7 +82,7 @@ for i in range(number_of_sets):
             timeslot.sort(key=lambda x: x["core"])
 
             for core in timeslot:
-                row.append(f'{core["job"]}{'(overrun)' if core["overrun"] else ''}')
+                row.append(f'{core["job"]}{"(overrun)" if core["overrun"] else ""}')
 
             writer.writerow(row)
 
